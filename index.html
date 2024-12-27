@@ -128,7 +128,12 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ score, level }), // Enviar score y level
+          body: JSON.stringify({
+            score, 
+            level, 
+            userAnswer, // Enviamos la respuesta escrita
+            correctAnswer: characters[currentIndex].answer, // Enviamos la respuesta correcta
+          }),
         });
         const data = await response.json();
         console.log(data.message); // Confirmación de que los datos fueron recibidos
