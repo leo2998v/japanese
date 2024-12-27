@@ -97,44 +97,43 @@
 
     async function checkAnswer() {
       const userAnswer = document.getElementById("answerInput").value.trim().toLowerCase();
-      const character = characters[currentIndex].char;
       const result = document.getElementById("result");
 
-      try {
-        // Enviar la solicitud POST a la API
-        const response = await fetch('/api/submitAnswer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ character, userAnswer })
-        });
+      if (userAnswer === characters[currentIndex].answer) {
+        score++;
+        result.textContent = "✅ ¡Correcto!";
+        result.classList.add("text-green-600");
+        result.classList.remove("text-red-600");
 
-        const data = await response.json();
-
-        if (data.correct) {
-          score++;
-          result.textContent = "✅ ¡Correcto!";
-          result.classList.add("text-green-600");
-          result.classList.remove("text-red-600");
-
-          // Nivel Up cada 10 puntos
-          if (score % 10 === 0) {
-            level++;
-            document.getElementById("level").textContent = level;
-            const levelUp = document.getElementById("levelUp");
-            levelUp.classList.remove("hidden");
-            setTimeout(() => levelUp.classList.add("hidden"), 2000);
-          }
-        } else {
-          result.textContent = `❌ Incorrecto. La respuesta es "${characters[currentIndex].answer}".`;
-          result.classList.add("text-red-600");
-          result.classList.remove("text-green-600");
+        // Nivel Up cada 10 puntos
+        if (score % 10 === 0) {
+          level++;
+          document.getElementById("level").textContent = level;
+          const levelUp = document.getElementById("levelUp");
+          levelUp.classList.remove("hidden");
+          setTimeout(() => levelUp.classList.add("hidden"), 2000);
         }
-
-        document.getElementById("score").textContent = score;
-      } catch (error) {
-        result.textContent = "❌ Error al verificar la respuesta. Intenta nuevamente.";
+      } else {
+        result.textContent = `❌ Incorrecto. La respuesta es "${characters[currentIndex].answer}".`;
         result.classList.add("text-red-600");
         result.classList.remove("text-green-600");
+      }
+
+      document.getElementById("score").textContent = score;
+
+      // Enviar los datos a la función serverless
+      try {
+        const response = await fetch('/api/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ score, level }), // Enviar score y level
+        });
+        const data = await response.json();
+        console.log(data.message); // Confirmación de que los datos fueron recibidos
+      } catch (error) {
+        console.error('Error al enviar los datos:', error);
       }
     }
 
