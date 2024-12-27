@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica de Hiragana y Katakana</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-96 text-center">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">📖 Aprende Hiragana y Katakana</h1>
+    <p class="text-lg text-gray-600 mb-2">Nivel: <span id="level" class="font-bold">1</span></p>
+    <p class="text-lg text-gray-600 mb-6">Puntaje: <span id="score" class="font-bold">0</span></p>
+
+    <!-- Carácter japonés -->
+    <div class="text-6xl font-bold text-purple-700 mb-4 animate-bounce" id="currentChar">
+      あ
+    </div>
+
+    <!-- Input para responder -->
+    <input 
+      type="text" 
+      placeholder="Escribe la lectura..." 
+      class="border-2 border-gray-300 rounded-lg w-full p-3 text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+      id="answerInput"
+    />
+
+    <!-- Botones -->
+    <div class="mt-6 space-y-3">
+      <button 
+        class="bg-purple-500 text-white w-full py-3 rounded-lg hover:bg-purple-600 transition"
+        onclick="checkAnswer()"
+      >
+        Comprobar
+      </button>
+      <button 
+        class="bg-gray-300 text-gray-700 w-full py-3 rounded-lg hover:bg-gray-400 transition"
+        onclick="nextQuestion()"
+      >
+        Siguiente
+      </button>
+    </div>
+
+    <!-- Resultado -->
+    <div id="result" class="mt-6 text-lg font-bold"></div>
+
+    <!-- Nivel Up Notification -->
+    <div id="levelUp" class="hidden text-xl font-bold text-yellow-500 mt-4 animate-pulse">
+      🎉 ¡Subiste de nivel! 🎉
+    </div>
+  </div>
+
+  <script>
+    // Lista de caracteres (hiragana + katakana)
+    const characters = [
+      { char: "あ", answer: "a" }, { char: "い", answer: "i" }, { char: "う", answer: "u" },
+      { char: "え", answer: "e" }, { char: "お", answer: "o" },
+      { char: "か", answer: "ka" }, { char: "き", answer: "ki" }, { char: "く", answer: "ku" },
+      { char: "け", answer: "ke" }, { char: "こ", answer: "ko" },
+      { char: "さ", answer: "sa" }, { char: "し", answer: "shi" }, { char: "す", answer: "su" },
+      { char: "せ", answer: "se" }, { char: "そ", answer: "so" },
+      { char: "た", answer: "ta" }, { char: "ち", answer: "chi" }, { char: "つ", answer: "tsu" },
+      { char: "て", answer: "te" }, { char: "と", answer: "to" },
+      { char: "な", answer: "na" }, { char: "に", answer: "ni" }, { char: "ぬ", answer: "nu" },
+      { char: "ね", answer: "ne" }, { char: "の", answer: "no" },
+      { char: "は", answer: "ha" }, { char: "ひ", answer: "hi" }, { char: "ふ", answer: "fu" },
+      { char: "へ", answer: "he" }, { char: "ほ", answer: "ho" },
+      { char: "ま", answer: "ma" }, { char: "み", answer: "mi" }, { char: "む", answer: "mu" },
+      { char: "め", answer: "me" }, { char: "も", answer: "mo" },
+      { char: "や", answer: "ya" }, { char: "ゆ", answer: "yu" }, { char: "よ", answer: "yo" },
+      { char: "ら", answer: "ra" }, { char: "り", answer: "ri" }, { char: "る", answer: "ru" },
+      { char: "れ", answer: "re" }, { char: "ろ", answer: "ro" },
+      { char: "わ", answer: "wa" }, { char: "を", answer: "wo" }, { char: "ん", answer: "n" },
+      { char: "ア", answer: "a" }, { char: "イ", answer: "i" }, { char: "ウ", answer: "u" },
+      { char: "エ", answer: "e" }, { char: "オ", answer: "o" },
+      { char: "カ", answer: "ka" }, { char: "キ", answer: "ki" }, { char: "ク", answer: "ku" },
+      { char: "ケ", answer: "ke" }, { char: "コ", answer: "ko" },
+      { char: "サ", answer: "sa" }, { char: "シ", answer: "shi" }, { char: "ス", answer: "su" },
+      { char: "セ", answer: "se" }, { char: "ソ", answer: "so" },
+      { char: "タ", answer: "ta" }, { char: "チ", answer: "chi" }, { char: "ツ", answer: "tsu" },
+      { char: "テ", answer: "te" }, { char: "ト", answer: "to" },
+      { char: "ナ", answer: "na" }, { char: "ニ", answer: "ni" }, { char: "ヌ", answer: "nu" },
+      { char: "ネ", answer: "ne" }, { char: "ノ", answer: "no" },
+      { char: "ハ", answer: "ha" }, { char: "ヒ", answer: "hi" }, { char: "フ", answer: "fu" },
+      { char: "ヘ", answer: "he" }, { char: "ホ", answer: "ho" },
+      { char: "マ", answer: "ma" }, { char: "ミ", answer: "mi" }, { char: "ム", answer: "mu" },
+      { char: "メ", answer: "me" }, { char: "モ", answer: "mo" },
+      { char: "ヤ", answer: "ya" }, { char: "ユ", answer: "yu" }, { char: "ヨ", answer: "yo" },
+      { char: "ラ", answer: "ra" }, { char: "リ", answer: "ri" }, { char: "ル", answer: "ru" },
+      { char: "レ", answer: "re" }, { char: "ロ", answer: "ro" },
+      { char: "ワ", answer: "wa" }, { char: "ヲ", answer: "wo" }, { char: "ン", answer: "n" },
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let level = 1;
+
+    function checkAnswer() {
+      const userAnswer = document.getElementById("answerInput").value.trim().toLowerCase();
+      const result = document.getElementById("result");
+
+      if (userAnswer === characters[currentIndex].answer) {
+        score++;
+        result.textContent = "✅ ¡Correcto!";
+        result.classList.add("text-green-600");
+        result.classList.remove("text-red-600");
+
+        // Nivel Up cada 10 puntos
+        if (score % 10 === 0) {
+          level++;
+          document.getElementById("level").textContent = level;
+          const levelUp = document.getElementById("levelUp");
+          levelUp.classList.remove("hidden");
+          setTimeout(() => levelUp.classList.add("hidden"), 2000);
+        }
+      } else {
+        result.textContent = `❌ Incorrecto. La respuesta es "${characters[currentIndex].answer}".`;
+        result.classList.add("text-red-600");
+        result.classList.remove("text-green-600");
+      }
+
+      document.getElementById("score").textContent = score;
+    }
+
+    function nextQuestion() {
+      currentIndex = Math.floor(Math.random() * characters.length);
+      document.getElementById("answerInput").value = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("currentChar").textContent = characters[currentIndex].char;
+    }
+  </script>
+</body>
+</html>
