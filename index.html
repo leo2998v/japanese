@@ -95,31 +95,47 @@
     let score = 0;
     let level = 1;
 
-    function checkAnswer() {
+    async function checkAnswer() {
       const userAnswer = document.getElementById("answerInput").value.trim().toLowerCase();
+      const character = characters[currentIndex].char;
       const result = document.getElementById("result");
 
-      if (userAnswer === characters[currentIndex].answer) {
-        score++;
-        result.textContent = "✅ ¡Correcto!";
-        result.classList.add("text-green-600");
-        result.classList.remove("text-red-600");
+      try {
+        // Enviar la solicitud POST a la API
+        const response = await fetch('/api/submitAnswer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ character, userAnswer })
+        });
 
-        // Nivel Up cada 10 puntos
-        if (score % 10 === 0) {
-          level++;
-          document.getElementById("level").textContent = level;
-          const levelUp = document.getElementById("levelUp");
-          levelUp.classList.remove("hidden");
-          setTimeout(() => levelUp.classList.add("hidden"), 2000);
+        const data = await response.json();
+
+        if (data.correct) {
+          score++;
+          result.textContent = "✅ ¡Correcto!";
+          result.classList.add("text-green-600");
+          result.classList.remove("text-red-600");
+
+          // Nivel Up cada 10 puntos
+          if (score % 10 === 0) {
+            level++;
+            document.getElementById("level").textContent = level;
+            const levelUp = document.getElementById("levelUp");
+            levelUp.classList.remove("hidden");
+            setTimeout(() => levelUp.classList.add("hidden"), 2000);
+          }
+        } else {
+          result.textContent = `❌ Incorrecto. La respuesta es "${characters[currentIndex].answer}".`;
+          result.classList.add("text-red-600");
+          result.classList.remove("text-green-600");
         }
-      } else {
-        result.textContent = `❌ Incorrecto. La respuesta es "${characters[currentIndex].answer}".`;
+
+        document.getElementById("score").textContent = score;
+      } catch (error) {
+        result.textContent = "❌ Error al verificar la respuesta. Intenta nuevamente.";
         result.classList.add("text-red-600");
         result.classList.remove("text-green-600");
       }
-
-      document.getElementById("score").textContent = score;
     }
 
     function nextQuestion() {
